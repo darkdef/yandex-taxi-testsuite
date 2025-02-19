@@ -16,5 +16,5 @@ def test_cluster_config(
 
 
 def test_cluster_rw(redis_cluster_store: redis.RedisCluster):
-    assert redis_cluster_store.set('foo', b'bar')
-    assert redis_cluster_store.get('foo') == b'bar'
+    assert redis_cluster_store.set('foo_cluster', b'bar')
+    assert redis_cluster_store.get('foo_cluster') == b'bar'
