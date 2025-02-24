@@ -9,16 +9,55 @@ if [ "x$REDIS_CONFIGS_DIR" = "x" ]; then
     die "REDIS_CONFIGS_DIR must be set"
 fi
 
-REDIS_SERVER=$(which redis-server)
+REDIS_SERVER=$(find_binary_or_die redis-server)
+REDIS_CLI=$(find_binary_or_die redis-cli)
 REDIS_ROLES="master0 master1 slave0 slave1 slave2"
 REDIS_SENTINEL_CONF=$REDIS_CONFIGS_DIR/redis_sentinel.conf
-REDIS_SLEEP_WORKAROUND_SECONDS=${REDIS_SLEEP_WORKAROUND_SECONDS:=1}
+REDIS_SLEEP_WORKAROUND_SECONDS=${REDIS_SLEEP_WORKAROUND_SECONDS:=15}
 REDIS_DATADIR=$REDIS_TMPDIR/data
 REDIS_LOGSDIR=$REDIS_TMPDIR/logs
 
-if [ "x$REDIS_SERVER" = "x" ]; then
-    die "No redis-server binary found"
-fi
+[ -z "$REDIS_SENTINEL_HOST" ] && die "REDIS_SENTINEL_HOST must be set"
+[ -z "$REDIS_SENTINEL_PORT" ] && die "REDIS_SENTINEL_PORT must be set"
+
+wait_redis_startup() {
+    local SLAVES=
+    local STATUS='OK'
+    local KEY=
+    for i in $(seq -${REDIS_SLEEP_WORKAROUND_SECONDS} ${REDIS_SLEEP_WORKAROUND_SECONDS}); do
+        SLAVES=$(
+          $REDIS_CLI -h $REDIS_SENTINEL_HOST -p $REDIS_SENTINEL_PORT SENTINEL slaves test_master0
+          $REDIS_CLI -h $REDIS_SENTINEL_HOST -p $REDIS_SENTINEL_PORT SENTINEL slaves test_master1
+        )
+
+        STATUS='OK'
+        KEY=''
+        for line in ${SLAVES}; do
+            if [ "x$line" = "xflags" ]; then
+                KEY='flags'
+            elif [ "x$line" = "xmaster-link-status" ]; then
+                KEY='master-link-status'
+            elif [ "x$KEY" = "xflags" ] && (echo "$line" | grep -q "disconnected"); then
+                STATUS='FAIL'
+                break
+            elif [ "x$KEY" = "xmaster-link-status" ] && (echo "$line" | grep -q "err"); then
+                STATUS='FAIL'
+                break
+            else
+                KEY=''
+            fi
+        done
+
+        if [ "x$STATUS" = "xOK" ]; then
+            return
+        fi
+
+        sleep 0.5
+    done
+
+    die "Redis instances failed to negotiate in ${REDIS_SLEEP_WORKAROUND_SECONDS} seconds. \
+        Try increasing the REDIS_SLEEP_WORKAROUND_SECONDS."
+}
 
 start() {
     rm -rf $REDIS_DATADIR
@@ -54,13 +93,7 @@ start() {
         die "Failed to start redis sentinel server"
     }
 
-    # hack
-    cat <<EOF
-Sleeping for $REDIS_SLEEP_WORKAROUND_SECONDS seconds to make Redis sentinel see all redis data servers...
-
-(use REDIS_SLEEP_WORKAROUND_SECONDS=0 to skip the sleep phase)
-EOF
-    sleep $REDIS_SLEEP_WORKAROUND_SECONDS
+    wait_redis_startup
 }
 
 stop() {
