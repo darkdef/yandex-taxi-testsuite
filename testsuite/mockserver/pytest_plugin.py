@@ -220,13 +220,11 @@ def _mockserver_getport(pytestconfig, worker_id):
 @pytest.fixture(scope='session')
 async def _mockserver(
     pytestconfig,
-    loop,
     _mockserver_getport,
 ) -> annotations.AsyncYieldFixture[server.Server]:
     if pytestconfig.option.mockserver_unix_socket:
         async with server.create_unix_server(
             socket_path=pytestconfig.option.mockserver_unix_socket,
-            loop=loop,
             pytestconfig=pytestconfig,
         ) as result:
             yield result
@@ -238,7 +236,6 @@ async def _mockserver(
         async with server.create_server(
             host=pytestconfig.option.mockserver_host,
             port=port,
-            loop=loop,
             pytestconfig=pytestconfig,
             ssl_info=None,
         ) as result:
@@ -248,7 +245,6 @@ async def _mockserver(
 @pytest.fixture(scope='session')
 async def _mockserver_ssl(
     pytestconfig,
-    loop,
     mockserver_ssl_cert,
     _mockserver_getport,
 ) -> annotations.AsyncYieldFixture[typing.Optional[server.Server]]:
@@ -260,7 +256,6 @@ async def _mockserver_ssl(
         async with server.create_server(
             host=pytestconfig.option.mockserver_ssl_host,
             port=port,
-            loop=loop,
             pytestconfig=pytestconfig,
             ssl_info=mockserver_ssl_cert,
         ) as result:
