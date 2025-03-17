@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+0.2.17
+~~~~~~
+
 - Add changelog
 - matching: matching now is available as `testsuite.matching`
 - matching: specify capture matching rule inside pattern
