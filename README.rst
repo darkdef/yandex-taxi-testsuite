@@ -178,12 +178,12 @@ Building documentation
 Contributing
 ~~~~~~~~~~~~
 
-  - Fork project
-  - Write code in your own branch
-  - Test your code
-  - Run linters and code formatters
-  - Add new changelog_ entry
-  - Create pull request on github
+* Fork project
+* Write code in your own branch
+* Test your code
+* Run linters and code formatters
+* Add new changelog_ entry
+* Create pull request on github
 
 .. _Yandex.Taxi: https://taxi.yandex.com/company/
 .. _pytest: https://pytest.org/
