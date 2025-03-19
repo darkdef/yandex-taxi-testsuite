@@ -15,9 +15,7 @@ fi
 
 OLD_PACKAGE_VERSION=$(awk '/^version = /{print $3}' setup.cfg)
 
-./tools/changelog check
-
-$EDITOR setup.cfg || die "Not edited"
+$EDITOR setup.cfg || die "setup.cfg: not edited"
 
 PACKAGE_VERSION=$(awk '/^version = /{print $3}' setup.cfg)
 
@@ -25,7 +23,15 @@ if [ "$OLD_PACKAGE_VERSION" = "$PACKAGE_VERSION" ]; then
     die "Version has not changed"
 fi
 
-./tools/changelog version "$PACKAGE_VERSION"
+git log "v${OLD_PACKAGE_VERSION}...HEAD" --format="COMMIT: %H%n%s%n%b" |
+    ./tools/changelog new-entry "$PACKAGE_VERSION"
+
+$EDITOR docs/changelog.rst ||
+    die "docs/changelog.rst: not edited"
+
+if grep -q '^TODO: remove' docs/changelog.rst; then
+    die "docs/changelog.rst: please remove sentinel"
+fi
 
 git commit -m "Version bump $PACKAGE_VERSION" setup.cfg docs/changelog.rst ||
     die "Commit failed"
