@@ -1,12 +1,15 @@
+# type: ignore
 import collections
 import copy
 import operator
 import pprint
 import typing
 
-import py.io
+import py
 
 from testsuite.utils import matching
+
+from . import assertrepr_compare_experimental
 
 # pylint: disable=unidiomatic-typecheck
 
@@ -37,10 +40,10 @@ TYPES = (dict,) + SET_TYPES + SEQUENCE_TYPES
 class ReprKeyMaker:
     def __init__(
         self,
-        dict_key_format: str = '[%r]',
-        dict_keys_connector: str = '',
-        sequence_key_format: str = '[%s]',
-        sequence_keys_connector: str = '',
+        dict_key_format='[%r]',
+        dict_keys_connector='',
+        sequence_key_format='[%s]',
+        sequence_keys_connector='',
     ):
         self.dict_key_format = dict_key_format
         self.dict_keys_connector = dict_keys_connector
@@ -48,7 +51,7 @@ class ReprKeyMaker:
         self.sequence_keys_connector = sequence_keys_connector
 
     def make(self, key):
-        parts: typing.List[str] = []
+        parts = []
         for sub_key in key:
             if isinstance(sub_key, int):
                 connector = self.sequence_keys_connector
@@ -108,7 +111,6 @@ class Comparator:
 
         parent_type = type_left
         is_set = isinstance(left, SET_TYPES)
-        keys: typing.Union[typing.Sequence[typing.Any], typing.Set[typing.Any]]
         if isinstance(left, SEQUENCE_TYPES):
             keys = range(max(len(left), len(right)))
             left = dict(enumerate(left))
@@ -147,7 +149,7 @@ def pytest_addoption(parser):
     group = parser.getgroup('common')
     group.addoption(
         '--assert-mode',
-        choices=['default', 'combine', 'analyze'],
+        choices=['default', 'combine', 'analyze', 'experimental'],
         default='combine',
         help='Assertion representation mode, combined by default',
     )
@@ -159,6 +161,13 @@ def pytest_addoption(parser):
     )
 
 
+def pytest_configure(config):
+    if config.option.assert_mode == 'experimental':
+        config.pluginmanager.register(
+            assertrepr_compare_experimental.AssertionPlugin()
+        )
+
+
 # pylint: disable=invalid-name
 def pytest_assertrepr_compare(config, op, left, right):
     assertion_mode = config.option.assert_mode
@@ -166,8 +175,8 @@ def pytest_assertrepr_compare(config, op, left, right):
         # pylint: disable=unidiomatic-typecheck
         assertion_mode == 'default'
         or op != '=='
-        or _match_type(left) is not _match_type(right)
-        or _match_type(left) not in TYPES
+        or type(left) is not type(right)
+        or type(left) not in TYPES
     ):
         return None
     add_full_diff = assertion_mode == 'combine'
@@ -194,9 +203,7 @@ def _compare_pair(
     def _group_by_type(cmp_result):
         total_records = 0
         default_dict = {'parts': [], 'extra_count': 0}
-        groups: typing.Dict[typing.Any, typing.Dict] = collections.defaultdict(
-            lambda: copy.deepcopy(default_dict)
-        )
+        groups = collections.defaultdict(lambda: copy.deepcopy(default_dict))
         records_limit_exceeded = False
         for key, failed_cmp_info, repr_lines in cmp_result:
             cmp_type = failed_cmp_info.cmp_type
@@ -233,10 +240,7 @@ def _compare_pair(
             groups.append(group)
         return groups
 
-    if (
-        _match_type(left) is not _match_type(right)
-        or _match_type(left) not in TYPES
-    ):
+    if type(left) is not type(right) or type(left) not in TYPES:
         raise ValueError(
             'Incorrect input types: %s, %s' % (type(left), type(right)),
         )
@@ -389,6 +393,4 @@ def _match_type(obj):
     obj_type = type(obj)
     if issubclass(obj_type, matching.AnyString):
         return str
-    if issubclass(obj_type, matching.PartialDict):
-        return dict
     return obj_type
