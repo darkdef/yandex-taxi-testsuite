@@ -21,8 +21,3 @@ def pytest_collection_modifyitems(items):
 @pytest.fixture(scope='session')
 async def event_loop():
     return asyncio.get_running_loop()
-
-
-@pytest.fixture(scope='session')
-def loop(event_loop):
-    return event_loop
