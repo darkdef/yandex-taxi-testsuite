@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+0.2.20
+~~~~~~
+
+- acallqueue: support callable instances (#166)
+- fix assertrepr_compare_experimental.py: replace pytest.Config with pytest.config.Config (#167)
+
 0.2.19
 ~~~~~~
 
