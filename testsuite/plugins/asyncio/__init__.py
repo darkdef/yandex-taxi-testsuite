@@ -1,6 +1,3 @@
-import asyncio
-
-import pytest_aiohttp
 from packaging import version
 
 PYTEST_ASYNCIO_VERSION = version.parse('0.22')

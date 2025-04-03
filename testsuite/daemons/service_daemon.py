@@ -9,17 +9,15 @@ import subprocess
 import time
 from collections.abc import AsyncGenerator, Awaitable, Callable, Sequence
 from typing import (
-    Any,
-    Dict,
-    Optional,
-    Tuple,
+    AsyncGenerator,
+    Awaitable,
+    Callable,
 )
 
 import aiohttp
 
 from testsuite.daemons import spawn
-from testsuite.daemons.spawn import __tracebackhide__
-from testsuite.utils import compat
+from testsuite.daemons.spawn import __tracebackhide__  # noqa: F401
 
 POLL_RETRIES = 2000
 PING_REQUEST_TIMEOUT = 1.0
