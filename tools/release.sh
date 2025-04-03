@@ -7,7 +7,7 @@ die() {
     exit 1
 }
 
-DEVELOP_BRANCH=develop
+DEVELOP_BRANCH=${DEVELOP_BRANCH:-develop}
 
 if [ "x$(git rev-parse --abbrev-ref HEAD)" != "x$DEVELOP_BRANCH" ]; then
     die "ERROR: Must be on $DEVELOP_BRANCH branch"
