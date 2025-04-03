@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.3.0
+~~~~~
+- remove unused imports from testsuite (#175)
+- drop 3.7 and 3.8 support (#178)
+- Drop legacy `loop` fixutre support (#177)
+- Support external develop branch
+- Fix assertrepr_compare_experimental mapping usage (#176)
+
 0.2.21
 ~~~~~~
 
