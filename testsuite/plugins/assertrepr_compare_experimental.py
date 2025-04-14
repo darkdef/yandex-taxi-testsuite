@@ -16,9 +16,10 @@ class AssertMode(enum.Enum):
 
 
 class AssertionPlugin:
-    def __init__(self, assert_mode):
+    def __init__(self, assert_mode, transform_mode):
         self._disabled = False
         self._assert_mode = assert_mode
+        self._transform_mode = transform_mode
 
     @contextlib.contextmanager
     def disabled(self):
@@ -39,7 +40,7 @@ class AssertionPlugin:
         if op != '==' or self._disabled:
             return None
 
-        comparator = compare_transform.CompareTransform()
+        comparator = compare_transform.CompareTransform(self._transform_mode)
         try:
             mapped_left, mapped_right = comparator.visit(left, right)
         except Exception:
@@ -75,7 +76,9 @@ class AssertionPlugin:
 def pytest_configure(config: pytest.Config):
     if config.option.assert_mode != AssertMode.DEFAULT:
         config.pluginmanager.register(
-            AssertionPlugin(config.option.assert_mode)
+            AssertionPlugin(
+                config.option.assert_mode, config.option.assert_transform_mode
+            )
         )
 
 
@@ -96,4 +99,11 @@ def pytest_addoption(parser: pytest.Parser):
         type=int,
         default=None,
         help='Depth of assertions, use 0 for simple print different items',
+    )
+    group.addoption(
+        '--assert-transform-mode',
+        choices=['default', 'experimental'],
+        type=compare_transform.TransformMode,
+        default='default',
+        help='Transformation mode in assertion representation',
     )

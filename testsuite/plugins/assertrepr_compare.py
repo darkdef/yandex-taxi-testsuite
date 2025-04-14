@@ -6,6 +6,7 @@ import pprint
 
 import py
 
+from testsuite._internal import compare_transform
 from testsuite.utils import matching
 
 from . import assertrepr_compare_experimental
@@ -158,13 +159,22 @@ def pytest_addoption(parser):
         default=None,
         help='Depth of assertions, use 0 for simple print different items',
     )
+    group.addoption(
+        '--assert-transform-mode',
+        choices=['default', 'experimental'],
+        default='default',
+        help='Transformation mode in assertion representation',
+    )
 
 
 def pytest_configure(config):
     if config.option.assert_mode == 'experimental':
         config.pluginmanager.register(
             assertrepr_compare_experimental.AssertionPlugin(
-                assertrepr_compare_experimental.AssertMode.COMBINE
+                assertrepr_compare_experimental.AssertMode.COMBINE,
+                compare_transform.TransformMode(
+                    config.option.assert_transform_mode
+                ),
             )
         )
 
