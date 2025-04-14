@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.3.1
+~~~~~
+
+- Add experimental version of CompareTransform (#182)
+- Specify tmp dir path inside tests (#181)
+- split tests by core and databases (#180)
+
 0.3.0
 ~~~~~
 - remove unused imports from testsuite (#175)
