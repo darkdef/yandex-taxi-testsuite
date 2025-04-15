@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.3.2
+~~~~~
+
+- restore testsuite/annotations.py: userver depends on it (#183)
+
 0.3.1
 ~~~~~
 
