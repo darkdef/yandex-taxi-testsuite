@@ -6,12 +6,12 @@ import typing
 
 import aiohttp.web
 
-from testsuite import type_annotations
+from testsuite import types
 from testsuite.utils import callinfo, http, url_util
 
 GenericRequestHandler = typing.Callable[
     ...,
-    type_annotations.MaybeAsyncResult[aiohttp.web.Response],
+    types.MaybeAsyncResult[aiohttp.web.Response],
 ]
 GenericRequestDecorator = typing.Callable[
     [GenericRequestHandler],
@@ -19,8 +19,8 @@ GenericRequestDecorator = typing.Callable[
 ]
 JsonRequestHandler = typing.Callable[
     ...,
-    type_annotations.MaybeAsyncResult[
-        typing.Union[aiohttp.web.Response, type_annotations.JsonAnyOptional]
+    types.MaybeAsyncResult[
+        typing.Union[aiohttp.web.Response, types.JsonAnyOptional]
     ],
 ]
 JsonRequestDecorator = typing.Callable[

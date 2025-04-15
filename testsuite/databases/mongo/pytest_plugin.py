@@ -14,7 +14,7 @@ import pymongo.errors
 import pytest
 from bson import json_util
 
-from testsuite import type_annotations, utils
+from testsuite import types, utils
 
 from . import connection, ensure_db_indexes, mongo_schema, service
 
@@ -291,7 +291,7 @@ def _mongo_create_indexes(
 
 
 @pytest.fixture(scope='session')
-def _mongo_thread_pool() -> type_annotations.YieldFixture[
+def _mongo_thread_pool() -> types.YieldFixture[
     multiprocessing.pool.ThreadPool,
 ]:
     pool = multiprocessing.pool.ThreadPool(processes=1)

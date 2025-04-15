@@ -8,7 +8,7 @@ import uuid
 import aiohttp
 import yarl
 
-from testsuite import type_annotations
+from testsuite import types
 from testsuite.utils import http, url_util
 
 DEFAULT_HOST = 'localhost'
@@ -108,7 +108,7 @@ class GenericClient(BaseAiohttpClient, typing.Generic[TResponse]):
     async def post(
         self,
         path: str,
-        json: type_annotations.JsonAnyOptional = None,
+        json: types.JsonAnyOptional = None,
         data: typing.Any = None,
         params: dict[str, str] | None = None,
         bearer: str | None = None,
@@ -132,7 +132,7 @@ class GenericClient(BaseAiohttpClient, typing.Generic[TResponse]):
     async def put(
         self,
         path,
-        json: type_annotations.JsonAnyOptional = None,
+        json: types.JsonAnyOptional = None,
         data: typing.Any = None,
         params: dict[str, str] | None = None,
         bearer: str | None = None,
@@ -156,7 +156,7 @@ class GenericClient(BaseAiohttpClient, typing.Generic[TResponse]):
     async def patch(
         self,
         path,
-        json: type_annotations.JsonAnyOptional = None,
+        json: types.JsonAnyOptional = None,
         data: typing.Any = None,
         params: dict[str, str] | None = None,
         bearer: str | None = None,
