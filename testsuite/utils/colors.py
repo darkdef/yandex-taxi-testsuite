@@ -19,4 +19,8 @@ class Colors:
 
 def should_enable_color(pytestconfig) -> bool:
     option = getattr(pytestconfig.option, 'color', 'no')
-    return option == 'yes' or option == 'auto' and sys.stderr.isatty()
+    if option == 'yes':
+        return True
+    if option == 'auto':
+        return sys.stderr.isatty()
+    return False
