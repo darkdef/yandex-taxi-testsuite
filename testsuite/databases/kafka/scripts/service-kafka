@@ -29,7 +29,8 @@ fi
 
 KAFKA_SOURCE_DIR="$KAFKA_TMPDIR/kafka"
 echo "Kafka source directory: $KAFKA_SOURCE_DIR"
-KAFKA_SOURCE_CONF_FILE="$KAFKA_SOURCE_DIR/config/kraft/server.properties"
+KAFKA_KRAFT_SOURCE_CONF_FILE="$KAFKA_SOURCE_DIR/config/kraft/server.properties"
+KAFKA_DEFAULT_SOURCE_CONF_FILE="$KAFKA_SOURCE_DIR/config/server.properties"
 KAFKA_CONF_FILE="$KAFKA_SOURCE_DIR/config/kraft/testsuite-kafka-server.properties"
 KAFKA_BIN_DIR="$KAFKA_SOURCE_DIR/bin"
 KAFKA_LOGS_DIR="$KAFKA_TMPDIR/logs" # Logs means data
@@ -73,7 +74,8 @@ start_kafka() {
 
     echo "Copying Kafka home to tmp (to patch server configs): $KAFKA_HOME -> $KAFKA_SOURCE_DIR"
     cp -r "$KAFKA_HOME"/* "$KAFKA_SOURCE_DIR/"
-    cp "$KAFKA_SOURCE_CONF_FILE" "$KAFKA_CONF_FILE"
+    mkdir -p $(dirname "$KAFKA_CONF_FILE")
+    cp "$KAFKA_KRAFT_SOURCE_CONF_FILE" "$KAFKA_CONF_FILE" || cp "$KAFKA_DEFAULT_SOURCE_CONF_FILE" "$KAFKA_CONF_FILE"
 
     echo "Generating cluster UUID..."
     CLUSTER_UUID_FILE=$KAFKA_TMPDIR/cluster_uuid.txt
@@ -91,22 +93,25 @@ start_kafka() {
     echo "Patched server config:\n$patched_config"
 
     echo "Formatting logs dir..."
+    # standalone appeared in kafka 4.0
+    # and is required for kafka launch
     "$KAFKA_BIN_DIR/kafka-storage.sh" format \
         --cluster-id $(cat "$CLUSTER_UUID_FILE") \
         --config $KAFKA_CONF_FILE \
-        --ignore-formatted
+        --standalone \
+        --ignore-formatted || "$KAFKA_BIN_DIR/kafka-storage.sh" format \
+            --cluster-id $(cat "$CLUSTER_UUID_FILE") \
+            --config $KAFKA_CONF_FILE \
+            --ignore-formatted
 
     echo "Running Kafka broker..."
     "$KAFKA_BIN_DIR/kafka-server-start.sh" -daemon \
         "$KAFKA_CONF_FILE" \
-        --override node.id="$KAFKA_NODE_ID" \
         --override auto.create.topics.enable=true \
         --override listeners="PLAINTEXT://$KAFKA_SERVER_HOST:$KAFKA_SERVER_PORT,CONTROLLER://$KAFKA_SERVER_HOST:$KAFKA_CONTROLLER_PORT" \
         --override advertised.listeners="PLAINTEXT://$KAFKA_SERVER_HOST:$KAFKA_SERVER_PORT" \
         --override controller.quorum.voters="$KAFKA_NODE_ID@$KAFKA_SERVER_HOST:$KAFKA_CONTROLLER_PORT" \
-        --override offsets.topic.num.partitions=1 \
-        --override log.dir="$KAFKA_LOGS_DIR" \
-        --override log.dirs="$KAFKA_LOGS_DIR"
+        --override offsets.topic.num.partitions=1
 
     # There is no basic healthcheck mechanism for checking if broker is started.
     # But almost exactly, if broker can create the topic, it is alive.

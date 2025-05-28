@@ -35,7 +35,8 @@ check_java() {
 }
 
 check_home() {
-    [ -x "$1/bin/kafka-run-class.sh" ] && [ -e "$1/config/kraft/server.properties" ]
+    # Start from kafka 4.0 kraft is default and kraft folder does not exists anymore
+    [ -x "$1/bin/kafka-run-class.sh" ] && ([ -e "$1/config/kraft/server.properties" ] || [ -e "$1/config/server.properties" ])
 }
 
 find_kafka() {
