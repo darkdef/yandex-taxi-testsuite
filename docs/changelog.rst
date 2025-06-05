@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+0.3.5
+~~~~~
+
+- fix pytest options in assertrepr plugin (#190)
+- add datetime/timedelta matchers (#191)
+
 0.3.4
 ~~~~~
 
