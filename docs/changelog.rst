@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.3.6
+~~~~~
+
+- tracing: support custom trace_id generators (#192)
+
 0.3.5
 ~~~~~
 
