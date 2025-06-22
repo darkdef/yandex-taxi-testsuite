@@ -1,6 +1,11 @@
 Changelog
 ---------
 
+0.3.6.1
+~~~~~~~
+
+- Remove legacy traceid prefix (#193)
+
 0.3.6
 ~~~~~
 
